@@ -10,7 +10,7 @@ compatibility_flags = ["nodejs_compat"]
 # Create with: wrangler kv:namespace create "RATE_LIMIT"
 # Paste the returned id below:
 binding = "RATE_LIMIT"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "1922d6a79e4445e9b6cfe4609702040c"
 
 [observability]
 enabled = true

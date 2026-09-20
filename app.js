@@ -6,7 +6,7 @@
 'use strict';
 
 const CONFIG = {
-  WORKER_URL: 'https://ehrlens-api.YOUR_SUBDOMAIN.workers.dev', // ← replace after deploy
+  WORKER_URL: 'https://ehrlens-api.mohalex.workers.dev',
   MAX_SESSION_QUERIES: 10,
   IMAGE_QUALITY: 0.82,
   MODES: {
