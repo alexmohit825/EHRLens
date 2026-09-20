@@ -1,6 +1,7 @@
 // ============================================================
 // EHRLens — AI Clinical Navigator  |  app.js
 // Vanilla JS · No framework · Instant load
+// Supports: camera capture · file upload · clipboard paste (Ctrl+V)
 // ============================================================
 'use strict';
 
@@ -248,6 +249,59 @@ function handleFile(file) {
   r.readAsDataURL(file);
 }
 
+// ── Clipboard Paste (Ctrl+V / PC side-by-side with Epic) ────
+// Works on any screen — paste an Epic screenshot directly from clipboard
+async function handleClipboardPaste(event) {
+  // Try paste event items first (works without permission prompt)
+  const items = event?.clipboardData?.items;
+  if (items) {
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) { handleFile(file); toast('📋 Screenshot pasted!'); return; }
+      }
+    }
+    toast('No image found in clipboard. Copy a screenshot first.');
+    return;
+  }
+  // Fallback: Clipboard API (requires permission, HTTPS only)
+  try {
+    const clipItems = await navigator.clipboard.read();
+    for (const ci of clipItems) {
+      const imgType = ci.types.find(t => t.startsWith('image/'));
+      if (imgType) {
+        const blob = await ci.getType(imgType);
+        handleFile(new File([blob], 'paste.png', { type: imgType }));
+        toast('📋 Screenshot pasted!');
+        return;
+      }
+    }
+    toast('No image in clipboard. Take a screenshot first (Win+Shift+S).');
+  } catch {
+    toast('Paste blocked. Use Ctrl+V while the app is focused, or upload a file.');
+  }
+}
+
+// ── Paste Zone button handler ────────────────────────────────
+async function triggerPasteFromButton() {
+  try {
+    const clipItems = await navigator.clipboard.read();
+    for (const ci of clipItems) {
+      const imgType = ci.types.find(t => t.startsWith('image/'));
+      if (imgType) {
+        const blob = await ci.getType(imgType);
+        handleFile(new File([blob], 'paste.png', { type: imgType }));
+        toast('📋 Screenshot pasted!');
+        return;
+      }
+    }
+    toast('No image in clipboard. Take a screenshot first (Win+Shift+S on Windows).');
+  } catch {
+    // Clipboard API blocked — show instruction
+    toast('Press Ctrl+V anywhere in EHRLens to paste your screenshot.');
+  }
+}
+
 function showPreview() {
   stopCamera();
   const img = $('preview-img');
@@ -291,6 +345,13 @@ function init() {
   // Camera — file upload fallback
   $('camera-upload-btn')?.addEventListener('click', () => $('file-input')?.click());
   $('file-input')?.addEventListener('change', e => handleFile(e.target.files[0]));
+
+  // Camera — paste zone button (PC side-by-side with Epic)
+  $('paste-btn')?.addEventListener('click', triggerPasteFromButton);
+
+  // ── Global Ctrl+V paste listener — works on ANY screen ───
+  // Physician can Ctrl+V a screenshot at any time without touching the UI
+  document.addEventListener('paste', (e) => handleClipboardPaste(e));
 
   // Drag-and-drop (desktop)
   $('screen-camera')?.addEventListener('dragover', e => {e.preventDefault();e.stopPropagation();});

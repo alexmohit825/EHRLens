@@ -98,6 +98,12 @@ body{font-family:var(--font-sans);background:var(--bg-deep);color:var(--text-pri
 .capture-btn::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(0,212,255,.4);animation:capture-ring 2s ease-in-out infinite}
 @keyframes capture-ring{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.08);opacity:.15}}
 .camera-hint{font-size:.8rem;color:rgba(255,255,255,.5);letter-spacing:.03em}
+
+/* PC paste + upload action row */
+.pc-actions{display:flex;flex-direction:row;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 16px}
+.pc-action-btn{font-size:.82rem;padding:10px 16px;min-height:44px;backdrop-filter:blur(8px);background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.75)}
+.pc-action-btn:active{background:rgba(0,212,255,.15);border-color:var(--cyan);color:var(--cyan)}
+kbd{display:inline-block;padding:1px 5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:4px;font-size:.72rem;font-family:var(--font-mono);letter-spacing:.02em;margin-left:4px}
 .camera-error{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;background:var(--bg-deep)}
 .camera-error-icon{font-size:3rem}
 .camera-error h3{font-size:1.2rem;color:var(--text-primary);text-align:center}

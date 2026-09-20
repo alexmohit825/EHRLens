@@ -87,7 +87,16 @@
       <div class="camera-bottom">
         <button id="capture-btn" class="capture-btn" aria-label="Capture screen"></button>
         <p class="camera-hint">Tap to capture</p>
-        <button id="camera-upload-btn" class="btn-ghost hidden" aria-label="Upload screenshot">📁 Upload Screenshot Instead</button>
+
+        <!-- PC / Desktop alternatives -->
+        <div class="pc-actions">
+          <button id="paste-btn" class="btn-ghost pc-action-btn" aria-label="Paste screenshot from clipboard">
+            📋 Paste Screenshot <kbd>Ctrl+V</kbd>
+          </button>
+          <button id="camera-upload-btn" class="btn-ghost pc-action-btn" aria-label="Upload screenshot file">
+            📁 Upload File
+          </button>
+        </div>
         <input id="file-input" type="file" accept="image/*" class="sr-only" />
       </div>
     </div>
