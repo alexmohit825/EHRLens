@@ -13,14 +13,9 @@ const ALLOWED_ORIGINS = [
   'null',
 ];
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-3.8-flash';
 
 // ── System Prompts — Institution-Agnostic by Design ──────────
-// The AI is explicitly instructed to analyze ONLY what is visible
-// in the screenshot, never to assume a "standard" build exists.
-// This is the key design decision that makes EHRLens work across
-// every hospital's custom Epic/Cerner configuration.
-
 const SYSTEM_PROMPTS = {
   epic: `You are EHRLens, an AI assistant helping healthcare professionals navigate Epic EHR.
 A physician has photographed their Epic screen and needs help.
@@ -96,22 +91,6 @@ function jsonResp(data, status = 200, origin = '*') {
   });
 }
 
-// ── Gemini Content Builder ────────────────────────────────────
-function buildContents(imageBase64, question, history = []) {
-  const contents = [];
-  for (const msg of history) {
-    contents.push({ role: msg.role, parts: [{ text: msg.content }] });
-  }
-  contents.push({
-    role: 'user',
-    parts: [
-      { inline_data: { mime_type: 'image/jpeg', data: imageBase64 } },
-      { text: question || 'Describe what you see on this screen and explain how to navigate it.' },
-    ],
-  });
-  return contents;
-}
-
 // ── Main ──────────────────────────────────────────────────────
 export default {
   async fetch(request, env) {
@@ -144,23 +123,34 @@ export default {
     if (!env.GEMINI_API_KEY) return jsonResp({ error: 'API key not configured' }, 500, origin);
 
     const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.general;
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+    const interactionsUrl = `https://generativelanguage.googleapis.com/v1beta/interactions`;
+
+    const inputItems = [];
+    for (const h of history.slice(-8)) {
+      inputItems.push({ type: 'text', text: `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}` });
+    }
+    inputItems.push({
+      type: 'image',
+      data: image_base64,
+      mime_type: 'image/jpeg',
+    });
+    inputItems.push({
+      type: 'text',
+      text: question || 'Describe what you see on this screen and explain how to navigate it.',
+    });
 
     let geminiResp;
     try {
-      geminiResp = await fetch(geminiUrl, {
+      geminiResp = await fetch(interactionsUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': env.GEMINI_API_KEY,
+        },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents: buildContents(image_base64, question, history.slice(-12)),
-          generationConfig: { temperature: 0.25, maxOutputTokens: 1200, responseMimeType: 'text/plain' },
-          safetySettings: [
-            { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-          ],
+          model: GEMINI_MODEL,
+          system_instruction: systemPrompt,
+          input: inputItems,
         }),
       });
     } catch (err) {
@@ -168,11 +158,25 @@ export default {
     }
 
     if (!geminiResp.ok) {
-      return jsonResp({ error: `Gemini API error ${geminiResp.status}` }, 502, origin);
+      const errText = await geminiResp.text();
+      return jsonResp({ error: `Gemini API error ${geminiResp.status}: ${errText}` }, 502, origin);
     }
 
     const data = await geminiResp.json();
-    const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    let answer = null;
+    if (Array.isArray(data?.steps)) {
+      for (const step of data.steps) {
+        if (step.type === 'model_output' && Array.isArray(step.content)) {
+          for (const part of step.content) {
+            if (part.type === 'text' && part.text) {
+              answer = part.text;
+              break;
+            }
+          }
+        }
+      }
+    }
+    if (!answer && data?.output_text) answer = data.output_text;
     if (!answer) return jsonResp({ error: 'No response from AI. Please try again.' }, 502, origin);
 
     return jsonResp({ answer, mode, remaining_queries: remaining }, 200, origin);
