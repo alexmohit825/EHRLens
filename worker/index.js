@@ -5,6 +5,7 @@
 
 const ALLOWED_ORIGINS = [
   'https://ehrlens.pages.dev',
+  'https://ehrlens.mohalex.workers.dev',
   'https://ehrlens.app',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
