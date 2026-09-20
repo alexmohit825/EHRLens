@@ -13,7 +13,7 @@ const ALLOWED_ORIGINS = [
   'null',
 ];
 
-const GEMINI_MODEL = 'gemini-2.0-flash-exp';
+const GEMINI_MODEL = 'gemini-2.0-flash';
 
 // ── System Prompts — Institution-Agnostic by Design ──────────
 // The AI is explicitly instructed to analyze ONLY what is visible
