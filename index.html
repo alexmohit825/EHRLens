@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>EHRLens — AI Clinical Navigator</title>
+
+  <!-- PWA / iOS -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="EHRLens" />
+  <link rel="apple-touch-icon" href="icons/icon-512.png" />
+  <meta name="theme-color" content="#0A0F1E" />
+
+  <!-- SEO -->
+  <meta name="description" content="Point your camera at any EHR screen. Ask anything. Get instant AI-powered clinical navigation help for Epic, Cerner, and beyond." />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ SCREEN 1: WELCOME ══════════════════════════════════ -->
+  <section id="screen-welcome" class="screen" role="main" aria-label="Welcome">
+    <img src="icons/icon-512.png" alt="EHRLens" class="welcome-logo" />
+    <h1 class="welcome-title">EHR<span>Lens</span></h1>
+    <p class="welcome-tagline">Point your camera at any EHR screen.<br>Ask anything. Get instant answers.</p>
+
+    <div class="welcome-features">
+      <div class="feature-row">
+        <span class="feature-icon">📷</span>
+        <div class="feature-text"><strong>Camera-Powered</strong>Point your phone at Epic, Cerner, or any medical software</div>
+      </div>
+      <div class="feature-row">
+        <span class="feature-icon">🎤</span>
+        <div class="feature-text"><strong>Voice Questions</strong>Speak your question hands-free — even complex clinical queries</div>
+      </div>
+      <div class="feature-row">
+        <span class="feature-icon">🧠</span>
+        <div class="feature-text"><strong>Institution-Aware AI</strong>Understands your hospital's specific EHR build, not generic defaults</div>
+      </div>
+      <div class="feature-row">
+        <span class="feature-icon">🔒</span>
+        <div class="feature-text"><strong>Zero Storage</strong>Images and responses are never saved, logged, or retained</div>
+      </div>
+    </div>
+
+    <div class="phi-warning" role="alert">
+      <span class="phi-warning-icon">⚠️</span>
+      <p class="phi-warning-text"><strong>PHI Advisory:</strong> Do not photograph screens containing patient names, DOBs, MRNs, or other identifiable information. Use for navigation, workflow, and help screens only.</p>
+    </div>
+
+    <button id="start-btn" class="btn-primary" aria-label="Open camera">
+      <span>Open Camera</span><span aria-hidden="true">→</span>
+    </button>
+    <p style="margin-top:16px;font-size:.75rem;color:var(--text-muted);text-align:center;">
+      Powered by Gemini AI &nbsp;•&nbsp; © 2026 A. Alex Mohit
+    </p>
+  </section>
+
+
+  <!-- ══ SCREEN 2: CAMERA ═══════════════════════════════════ -->
+  <section id="screen-camera" class="screen" role="main" aria-label="Camera viewfinder">
+    <video id="video-feed" autoplay playsinline muted aria-hidden="true"></video>
+
+    <div class="camera-overlay">
+      <div class="camera-top-bar">
+        <span class="camera-wordmark">EHR<span>Lens</span></span>
+        <nav class="mode-selector" role="tablist" aria-label="EHR system mode">
+          <button class="mode-chip active" data-mode="epic"    role="tab">Epic</button>
+          <button class="mode-chip"        data-mode="cerner"  role="tab">Cerner</button>
+          <button class="mode-chip"        data-mode="general" role="tab">General</button>
+          <button class="mode-chip"        data-mode="other"   role="tab">Other</button>
+        </nav>
+      </div>
+
+      <div class="viewfinder" aria-hidden="true">
+        <div class="vf-corners">
+          <div class="corner-br"></div>
+          <div class="corner-bl"></div>
+          <span class="vf-hint">Aim at your EHR screen</span>
+        </div>
+      </div>
+
+      <div class="camera-bottom">
+        <button id="capture-btn" class="capture-btn" aria-label="Capture screen"></button>
+        <p class="camera-hint">Tap to capture</p>
+        <button id="camera-upload-btn" class="btn-ghost hidden" aria-label="Upload screenshot">📁 Upload Screenshot Instead</button>
+        <input id="file-input" type="file" accept="image/*" class="sr-only" />
+      </div>
+    </div>
+
+    <div id="camera-error" class="camera-error hidden" role="alert">
+      <span class="camera-error-icon">📷</span>
+      <h3>Camera Unavailable</h3>
+      <p>Camera access was denied or your device has no camera.<br>Upload a screenshot instead.</p>
+    </div>
+  </section>
+
+
+  <!-- ══ SCREEN 3: PREVIEW + QUESTION ═══════════════════════ -->
+  <section id="screen-preview" class="screen" role="main" aria-label="Preview and question">
+    <header class="preview-header">
+      <button id="preview-back" class="btn-icon" aria-label="Back to camera">←</button>
+      <h2>Ask a Question</h2>
+    </header>
+
+    <div class="preview-body">
+      <div class="preview-image-container">
+        <img id="preview-img" src="" alt="Captured EHR screen" />
+        <span id="preview-mode-badge" class="preview-image-badge badge-epic">Epic</span>
+      </div>
+
+      <div>
+        <p class="question-label">Your Question</p>
+        <div class="question-input-wrapper">
+          <textarea
+            id="question-input"
+            placeholder="e.g. How do I find the allergy list from this screen?"
+            rows="3"
+            autocomplete="off" autocorrect="on" autocapitalize="sentences" spellcheck="true"
+            aria-label="Enter your question"
+          ></textarea>
+          <div class="question-actions">
+            <button id="voice-btn" class="voice-btn" type="button" aria-label="Speak question">🎤 Speak</button>
+            <button id="ask-btn" class="btn-primary" style="width:auto;max-width:none;padding:12px 24px;font-size:.95rem;">Ask EHRLens ↗</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-questions">
+        <p class="quick-q-label">Quick Questions</p>
+        <div id="quick-q-pills" class="quick-q-pills" role="list"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══ SCREEN 4: ANALYZING ════════════════════════════════ -->
+  <section id="screen-analyzing" class="screen" role="main" aria-label="Analyzing" aria-live="polite">
+    <img id="analyzing-img" src="" alt="Screen being analyzed" class="analyzing-img" />
+    <div class="analyzing-orb"><span class="analyzing-icon" aria-hidden="true">🔬</span></div>
+    <div class="analyzing-text">
+      <h3>Analyzing your screen…</h3>
+      <p>Reading the interface and preparing your answer</p>
+      <p id="analyzing-timer" aria-live="polite">0.0s</p>
+    </div>
+  </section>
+
+
+  <!-- ══ SCREEN 5: RESPONSE ════════════════════════════════ -->
+  <section id="screen-response" class="screen" role="main" aria-label="AI response">
+    <header class="response-header">
+      <button id="response-back" class="btn-icon" aria-label="Back">←</button>
+      <h2>EHRLens Answer</h2>
+      <span id="response-mode-badge" class="preview-image-badge badge-epic" style="position:static;">Epic</span>
+    </header>
+
+    <div class="response-body" aria-live="polite">
+      <img id="response-preview-img" src="" alt="Analyzed screen"
+        style="width:100%;border-radius:12px;border:1px solid var(--border);max-height:130px;object-fit:contain;background:#000;" />
+
+      <div id="response-question" class="response-question" role="note"></div>
+
+      <div class="response-card">
+        <div class="response-card-header">
+          <div class="ai-badge"><span class="ai-dot" aria-hidden="true"></span>EHRLens AI</div>
+        </div>
+        <div id="response-content" class="response-content"></div>
+        <div class="response-actions">
+          <button id="copy-btn" class="btn-copy">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="followup-bar" role="form" aria-label="Follow-up question">
+      <div class="followup-inner">
+        <textarea id="followup-input" placeholder="Ask a follow-up question…" rows="1"
+          autocomplete="off" autocorrect="on" autocapitalize="sentences"></textarea>
+        <button id="followup-voice-btn" class="voice-btn"
+          style="padding:8px 10px;font-size:.8rem;min-height:40px;" type="button">🎤</button>
+        <button id="followup-send" class="followup-send" type="button">↗</button>
+      </div>
+    </div>
+
+    <div class="response-footer">
+      <button id="new-scan-btn" class="btn-ghost">📷 New Scan</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="app.js" type="module"></script>
+</body>
+</html>
