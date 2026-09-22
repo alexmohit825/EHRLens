@@ -1,8 +1,8 @@
-// EHRLens Service Worker v1.0
+// EHRLens Service Worker v2.0
 // Caches the app shell for instant offline load.
 // API responses are NEVER cached — zero PHI persistence.
 
-const CACHE_NAME = 'ehrlens-shell-v1';
+const CACHE_NAME = 'ehrlens-shell-v2';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
