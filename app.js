@@ -57,6 +57,8 @@ const state = {
   analyzeStart: null,
   timerInterval: null,
   recognition: null,
+  abortController: null,
+  currentQuestion: '',
 };
 
 // ── DOM Helpers ───────────────────────────────────────────────
@@ -184,10 +186,11 @@ function renderQuickQuestions() {
 }
 
 // ── API ───────────────────────────────────────────────────────
-async function analyzeImage(img, question, history) {
+async function analyzeImage(img, question, history, signal) {
   const r = await fetch(`${CONFIG.WORKER_URL}/api/analyze`, {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
+    signal,
     body: JSON.stringify({ image_base64: img, question: question.trim(), mode: state.mode, history }),
   });
   if(!r.ok){const e=await r.json().catch(()=>({error:`HTTP ${r.status}`}));throw new Error(e.error||`Server error ${r.status}`);}
@@ -202,17 +205,39 @@ function startTimer() {
 }
 function stopTimer() { clearInterval(state.timerInterval); state.timerInterval = null; }
 
+// ── Stop / Cancel Analysis ────────────────────────────────────
+function stopQuery() {
+  if (state.abortController) {
+    try {
+      state.abortController.abort();
+    } catch {}
+    state.abortController = null;
+  }
+  stopTimer();
+  toast('⏹ Analysis stopped');
+  showScreen('preview');
+  const qi = $('question-input');
+  if (qi && state.currentQuestion) {
+    qi.value = state.currentQuestion;
+    qi.focus();
+  }
+}
+
 // ── Query Flow ────────────────────────────────────────────────
 async function runQuery(question) {
   if (!state.capturedImage) { toast('📷 No image captured yet. Please scan a screen first.'); return; }
   if (!question.trim()) { toast('Please enter or speak a question.'); return; }
   state.sessionQueryCount++;
+  state.currentQuestion = question.trim();
   const ai = $('analyzing-img');
   if(ai) ai.src = `data:image/jpeg;base64,${state.capturedImage}`;
   showScreen('analyzing');
   startTimer();
+
+  state.abortController = new AbortController();
   try {
-    const data = await analyzeImage(state.capturedImage, question, state.history);
+    const data = await analyzeImage(state.capturedImage, question, state.history, state.abortController.signal);
+    state.abortController = null;
     stopTimer();
     state.history.push({role:'user',content:question});
     state.history.push({role:'model',content:data.answer});
@@ -224,7 +249,11 @@ async function runQuery(question) {
       setTimeout(() => toast(`${CONFIG.MAX_SESSION_QUERIES - state.sessionQueryCount} queries remaining this session.`), 1500);
     }
   } catch(err) {
+    state.abortController = null;
     stopTimer();
+    if (err.name === 'AbortError') {
+      return;
+    }
     toast(`⚠️ ${err.message || 'Query failed. Check your connection.'}`);
     showScreen('preview');
   }
@@ -359,6 +388,12 @@ function init() {
 
   // Preview — back
   $('preview-back')?.addEventListener('click', () => { showScreen('camera'); startCamera(); });
+
+  // Preview — recapture button
+  $('preview-recapture-btn')?.addEventListener('click', () => { showScreen('camera'); startCamera(); });
+
+  // Analyzing — stop button
+  $('btn-stop-analyzing')?.addEventListener('click', () => stopQuery());
 
   // Preview — textarea auto-resize
   $('question-input')?.addEventListener('input', function(){this.style.height='auto';this.style.height=`${Math.min(this.scrollHeight,140)}px`;});

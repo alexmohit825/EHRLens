@@ -121,6 +121,9 @@ kbd{display:inline-block;padding:1px 5px;background:rgba(255,255,255,.12);border
 .badge-cerner{color:#93C5FD;border:1px solid rgba(59,130,246,.4)}
 .badge-general{color:#C4B5FD;border:1px solid rgba(124,58,237,.4)}
 .badge-other{color:#6EE7B7;border:1px solid rgba(16,185,129,.4)}
+.preview-recapture-btn{position:absolute;bottom:10px;right:10px;padding:6px 12px;background:rgba(15,23,42,.85);backdrop-filter:blur(8px);border:1px solid rgba(0,212,255,.4);border-radius:8px;font-size:.78rem;font-weight:600;color:var(--cyan);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;display:inline-flex;align-items:center;gap:4px}
+.preview-recapture-btn:hover{background:rgba(0,212,255,.2);border-color:var(--cyan);color:#fff}
+.preview-recapture-btn:active{transform:scale(.96)}
 .question-label{font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
 .question-input-wrapper{background:var(--bg-card);border:1.5px solid var(--border);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s}
 .question-input-wrapper:focus-within{border-color:var(--border-strong);box-shadow:0 0 0 3px var(--cyan-dim)}
@@ -156,6 +159,8 @@ kbd{display:inline-block;padding:1px 5px;background:rgba(255,255,255,.12);border
 .analyzing-text h3{font-size:1.1rem;font-weight:600;color:var(--text-primary);margin-bottom:6px}
 .analyzing-text p{font-size:.9rem;color:var(--text-secondary)}
 #analyzing-timer{font-family:var(--font-mono);color:var(--cyan);font-size:.85rem;margin-top:4px}
+.btn-stop{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 20px;margin-top:14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#FCA5A5;border-radius:22px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--font-sans);-webkit-tap-highlight-color:transparent}
+.btn-stop:hover,.btn-stop:active{background:rgba(239,68,68,.25);border-color:#EF4444;color:#fff;transform:scale(1.02)}
 
 /* ── Response ── */
 #screen-response{background:var(--bg-deep);padding-top:var(--safe-top);padding-bottom:var(--safe-bottom)}
