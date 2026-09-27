@@ -112,57 +112,46 @@ async function startCamera() {
   const errEl = $('camera-error');
   if (!video) return;
 
-  // Clean up any existing stream first
   stopCamera();
 
-  let stream = null;
-  const constraintsList = [
-    // 1. High-resolution rear camera (best for EHR monitors)
-    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
-    // 2. Standard rear camera
-    { video: { facingMode: { ideal: 'environment' } }, audio: false },
-    // 3. Any available camera (laptop / webcam / front)
-    { video: true, audio: false },
-  ];
-
-  for (const constraints of constraintsList) {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia(constraints);
-      if (stream) break;
-    } catch {
-      // Try next constraint level
-    }
-  }
-
-  if (!stream) {
-    errEl?.classList.remove('hidden');
-    $('camera-upload-btn')?.classList.remove('hidden');
-    return;
-  }
+  // iOS Safari & Mobile WebKit mandatory inline playback configurations
+  video.setAttribute('playsinline', 'true');
+  video.setAttribute('webkit-playsinline', 'true');
+  video.setAttribute('autoplay', 'true');
+  video.setAttribute('muted', 'true');
+  video.playsInline = true;
+  video.muted = true;
+  video.defaultMuted = true;
 
   try {
+    // 1. Primary: Rear environment camera for EHR monitor capture
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false,
+    });
     state.stream = stream;
     video.srcObject = stream;
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('autoplay', 'true');
-    video.setAttribute('muted', 'true');
-    video.playsInline = true;
-    video.muted = true;
-
-    // Ensure metadata is loaded before attempting playback
-    if (video.readyState < 2) {
-      await new Promise((resolve) => {
-        video.onloadedmetadata = () => resolve();
-        setTimeout(resolve, 600); // Safety fallback timeout
-      });
-    }
-
-    await video.play();
+    const p = video.play();
+    if (p !== undefined) p.catch(e => console.warn('[EHRLens] play warning:', e));
     errEl?.classList.add('hidden');
-  } catch (playErr) {
-    console.warn('[EHRLens] Video play error:', playErr);
-    errEl?.classList.remove('hidden');
-    $('camera-upload-btn')?.classList.remove('hidden');
+  } catch (primaryErr) {
+    console.warn('[EHRLens] Rear camera init failed, trying fallback:', primaryErr);
+    try {
+      // 2. Fallback: Generic video stream (desktop webcam / single camera)
+      const fallbackStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+      state.stream = fallbackStream;
+      video.srcObject = fallbackStream;
+      const p = video.play();
+      if (p !== undefined) p.catch(e => console.warn('[EHRLens] fallback play warning:', e));
+      errEl?.classList.add('hidden');
+    } catch (fallbackErr) {
+      console.error('[EHRLens] Camera unavailable or permission denied:', fallbackErr);
+      errEl?.classList.remove('hidden');
+      $('camera-upload-btn')?.classList.remove('hidden');
+    }
   }
 }
 

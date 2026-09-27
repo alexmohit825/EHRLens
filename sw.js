@@ -2,12 +2,12 @@
 // Caches the app shell for instant offline load.
 // API responses are NEVER cached — zero PHI persistence.
 
-const CACHE_NAME = 'ehrlens-shell-v3';
+const CACHE_NAME = 'ehrlens-shell-v3.1';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/app.js',
+  '/styles.css?v=3.1',
+  '/app.js?v=3.1',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
