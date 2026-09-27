@@ -110,24 +110,71 @@ function showScreen(name) {
 async function startCamera() {
   const video = $('video-feed');
   const errEl = $('camera-error');
+  if (!video) return;
+
+  // Clean up any existing stream first
+  stopCamera();
+
+  let stream = null;
+  const constraintsList = [
+    // 1. High-resolution rear camera (best for EHR monitors)
+    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
+    // 2. Standard rear camera
+    { video: { facingMode: { ideal: 'environment' } }, audio: false },
+    // 3. Any available camera (laptop / webcam / front)
+    { video: true, audio: false },
+  ];
+
+  for (const constraints of constraintsList) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (stream) break;
+    } catch {
+      // Try next constraint level
+    }
+  }
+
+  if (!stream) {
+    errEl?.classList.remove('hidden');
+    $('camera-upload-btn')?.classList.remove('hidden');
+    return;
+  }
+
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-      audio: false,
-    });
     state.stream = stream;
     video.srcObject = stream;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('autoplay', 'true');
+    video.setAttribute('muted', 'true');
+    video.playsInline = true;
+    video.muted = true;
+
+    // Ensure metadata is loaded before attempting playback
+    if (video.readyState < 2) {
+      await new Promise((resolve) => {
+        video.onloadedmetadata = () => resolve();
+        setTimeout(resolve, 600); // Safety fallback timeout
+      });
+    }
+
     await video.play();
     errEl?.classList.add('hidden');
-  } catch {
+  } catch (playErr) {
+    console.warn('[EHRLens] Video play error:', playErr);
     errEl?.classList.remove('hidden');
     $('camera-upload-btn')?.classList.remove('hidden');
   }
 }
 
 function stopCamera() {
-  state.stream?.getTracks().forEach(t => t.stop());
-  state.stream = null;
+  if (state.stream) {
+    state.stream.getTracks().forEach(t => t.stop());
+    state.stream = null;
+  }
+  const video = $('video-feed');
+  if (video && video.srcObject) {
+    video.srcObject = null;
+  }
 }
 
 function captureFrame() {

@@ -66,29 +66,39 @@
     <video id="video-feed" autoplay playsinline muted aria-hidden="true"></video>
 
     <div class="camera-overlay">
-      <div class="camera-top-bar">
-        <span class="camera-wordmark">EHR<span>Lens</span></span>
-        <nav class="mode-selector" role="tablist" aria-label="EHR system mode">
-          <button class="mode-chip active" data-mode="epic"    role="tab">Epic</button>
-          <button class="mode-chip"        data-mode="cerner"  role="tab">Cerner</button>
-          <button class="mode-chip"        data-mode="general" role="tab">General</button>
-          <button class="mode-chip"        data-mode="other"   role="tab">Other</button>
-        </nav>
+      <!-- TOP CONTROLS: Mode Chips + Prominent Top Capture Button -->
+      <div class="camera-top-zone">
+        <div class="camera-top-bar">
+          <span class="camera-wordmark">EHR<span>Lens</span></span>
+          <nav class="mode-selector" role="tablist" aria-label="EHR system mode">
+            <button class="mode-chip active" data-mode="epic"    role="tab">Epic</button>
+            <button class="mode-chip"        data-mode="cerner"  role="tab">Cerner</button>
+            <button class="mode-chip"        data-mode="general" role="tab">General</button>
+            <button class="mode-chip"        data-mode="other"   role="tab">Other</button>
+          </nav>
+        </div>
+
+        <div class="camera-top-actions">
+          <button id="capture-btn" class="capture-btn-top" aria-label="Capture screen">
+            <span class="capture-icon" aria-hidden="true">📸</span>
+            <span class="capture-text">Capture Screen</span>
+          </button>
+          <p class="camera-top-hint">Aim at EHR screen &amp; tap Capture</p>
+        </div>
       </div>
 
+      <!-- CENTER LIVE VIEWFINDER -->
       <div class="viewfinder" aria-hidden="true">
         <div class="vf-corners">
           <div class="corner-br"></div>
           <div class="corner-bl"></div>
-          <span class="vf-hint">Aim at your EHR screen</span>
+          <div class="vf-scanline"></div>
+          <span class="vf-hint">Target EHR Screen Area</span>
         </div>
       </div>
 
+      <!-- BOTTOM FALLBACK & DESKTOP TOOLS -->
       <div class="camera-bottom">
-        <button id="capture-btn" class="capture-btn" aria-label="Capture screen"></button>
-        <p class="camera-hint">Tap to capture</p>
-
-        <!-- PC / Desktop alternatives -->
         <div class="pc-actions">
           <button id="paste-btn" class="btn-ghost pc-action-btn" aria-label="Paste screenshot from clipboard">
             📋 Paste Screenshot <kbd>Ctrl+V</kbd>
