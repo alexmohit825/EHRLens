@@ -100,10 +100,10 @@ function toast(msg, ms = 2800) {
 
 // ── Screen Nav ────────────────────────────────────────────────
 function showScreen(name) {
-  const prev = document.querySelector('.screen.active');
-  if (prev) { prev.classList.add('exit'); prev.classList.remove('active'); setTimeout(() => prev.classList.remove('exit'), 300); }
+  $all('.screen').forEach(s => s.classList.remove('active', 'exit'));
   state.screen = name;
-  requestAnimationFrame(() => $(`screen-${name}`)?.classList.add('active'));
+  const target = $(`screen-${name}`);
+  if (target) target.classList.add('active');
 }
 
 // ── Camera ────────────────────────────────────────────────────

@@ -31,6 +31,18 @@
     <h1 class="welcome-title">EHR<span>Lens</span></h1>
     <p class="welcome-tagline">Point your camera at any EHR screen.<br>Ask anything. Get instant answers.</p>
 
+    <!-- PROMINENT TOP ACTION BUTTON -->
+    <button id="start-btn" class="btn-primary" aria-label="Open camera" style="margin-bottom: 24px; box-shadow: 0 4px 28px var(--cyan-glow);">
+      <span style="font-size: 1.2rem;">📷</span>
+      <span>Open Camera</span>
+      <span aria-hidden="true">→</span>
+    </button>
+
+    <div class="phi-warning" role="alert" style="margin-bottom: 20px;">
+      <span class="phi-warning-icon">⚠️</span>
+      <p class="phi-warning-text"><strong>PHI Advisory:</strong> Do not photograph identifiable patient data. Use for navigation and workflow screens.</p>
+    </div>
+
     <div class="welcome-features">
       <div class="feature-row">
         <span class="feature-icon">📷</span>
@@ -44,20 +56,8 @@
         <span class="feature-icon">🧠</span>
         <div class="feature-text"><strong>Institution-Aware AI</strong>Understands your hospital's specific EHR build, not generic defaults</div>
       </div>
-      <div class="feature-row">
-        <span class="feature-icon">🔒</span>
-        <div class="feature-text"><strong>Zero Storage</strong>Images and responses are never saved, logged, or retained</div>
-      </div>
     </div>
 
-    <div class="phi-warning" role="alert">
-      <span class="phi-warning-icon">⚠️</span>
-      <p class="phi-warning-text"><strong>PHI Advisory:</strong> Do not photograph screens containing patient names, DOBs, MRNs, or other identifiable information. Use for navigation, workflow, and help screens only.</p>
-    </div>
-
-    <button id="start-btn" class="btn-primary" aria-label="Open camera">
-      <span>Open Camera</span><span aria-hidden="true">→</span>
-    </button>
     <p style="margin-top:16px;font-size:.75rem;color:var(--text-muted);text-align:center;">
       Powered by Gemini AI &nbsp;•&nbsp; © 2026 A. Alex Mohit
     </p>
