@@ -96,7 +96,7 @@ body{font-family:var(--font-sans);background:var(--bg-deep);color:var(--text-pri
 
 /* Center Viewfinder */
 .viewfinder{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:5}
-.vf-corners{width:min(86vw,360px);aspect-ratio:16/11;position:relative;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.22)}
+.vf-corners{width:min(86vw,360px);aspect-ratio:16/11;position:relative;border-radius:12px}
 .vf-corners::before,.vf-corners::after,.vf-corners>.corner-br,.vf-corners>.corner-bl{content:'';position:absolute;width:32px;height:32px;border-color:var(--cyan);border-style:solid;opacity:.95;filter:drop-shadow(0 0 6px var(--cyan))}
 .vf-corners::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:8px 0 0 0}
 .vf-corners::after{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 8px 0 0}

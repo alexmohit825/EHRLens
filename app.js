@@ -113,45 +113,73 @@ async function startCamera() {
   if (!video) return;
 
   stopCamera();
+  errEl?.classList.add('hidden');
 
-  // iOS Safari & Mobile WebKit mandatory inline playback configurations
-  video.setAttribute('playsinline', 'true');
-  video.setAttribute('webkit-playsinline', 'true');
-  video.setAttribute('autoplay', 'true');
-  video.setAttribute('muted', 'true');
+  // iOS Safari / WebKit mandatory video configurations
   video.playsInline = true;
   video.muted = true;
   video.defaultMuted = true;
+  video.autoplay = true;
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
+  video.setAttribute('autoplay', '');
+  video.setAttribute('muted', '');
 
+  let stream = null;
+  let lastErr = null;
+
+  // 1. Try mobile rear camera without strict resolution
   try {
-    // 1. Primary: Rear environment camera for EHR monitor capture
-    const stream = await navigator.mediaDevices.getUserMedia({
+    stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: 'environment' } },
       audio: false,
     });
-    state.stream = stream;
-    video.srcObject = stream;
-    const p = video.play();
-    if (p !== undefined) p.catch(e => console.warn('[EHRLens] play warning:', e));
-    errEl?.classList.add('hidden');
-  } catch (primaryErr) {
-    console.warn('[EHRLens] Rear camera init failed, trying fallback:', primaryErr);
+  } catch (e1) {
+    lastErr = e1;
+    console.warn('[EHRLens] Rear camera attempt failed:', e1);
     try {
-      // 2. Fallback: Generic video stream (desktop webcam / single camera)
-      const fallbackStream = await navigator.mediaDevices.getUserMedia({
+      // 2. Fallback to basic video stream (front cam / webcam / desktop)
+      stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: false,
       });
-      state.stream = fallbackStream;
-      video.srcObject = fallbackStream;
-      const p = video.play();
-      if (p !== undefined) p.catch(e => console.warn('[EHRLens] fallback play warning:', e));
-      errEl?.classList.add('hidden');
-    } catch (fallbackErr) {
-      console.error('[EHRLens] Camera unavailable or permission denied:', fallbackErr);
-      errEl?.classList.remove('hidden');
+    } catch (e2) {
+      lastErr = e2;
+      console.error('[EHRLens] Fallback camera attempt failed:', e2);
+    }
+  }
+
+  if (!stream) {
+    if (errEl) {
+      errEl.classList.remove('hidden');
+      const p = errEl.querySelector('p');
+      if (p) {
+        if (lastErr && (lastErr.name === 'NotAllowedError' || lastErr.name === 'PermissionDeniedError')) {
+          p.innerHTML = 'Camera access was not granted.<br>To enable: open <strong>Settings &gt; Safari &gt; Camera</strong> on your phone and select <strong>Allow</strong>.';
+        } else {
+          p.innerHTML = `Camera unavailable (${lastErr ? lastErr.name || lastErr.message : 'Unknown'}).<br>Upload a screenshot instead.`;
+        }
+      }
       $('camera-upload-btn')?.classList.remove('hidden');
     }
+    return;
+  }
+
+  state.stream = stream;
+  video.srcObject = stream;
+
+  try {
+    await video.play();
+  } catch (playErr) {
+    console.warn('[EHRLens] video.play() warning:', playErr);
+    // User touch recovery fallback
+    const resume = () => {
+      video.play().catch(() => {});
+      window.removeEventListener('touchstart', resume);
+      window.removeEventListener('click', resume);
+    };
+    window.addEventListener('touchstart', resume, { once: true });
+    window.addEventListener('click', resume, { once: true });
   }
 }
 
@@ -481,8 +509,22 @@ function init() {
     fuBtn.addEventListener('click',()=>{if(!fuR)return;state.isListening?stopListening(fuR,fuBtn):startListening(fuR);});
   }
 
-  // Service Worker
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  // Service Worker Registration & Cache Purge
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const reg of registrations) {
+        reg.update();
+      }
+    });
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  }
+  if ('caches' in window) {
+    caches.keys().then((keys) => {
+      keys.forEach((k) => {
+        if (k !== 'ehrlens-shell-v4.0') caches.delete(k);
+      });
+    });
+  }
 
   // URL mode param
   const m=new URLSearchParams(location.search).get('mode');
