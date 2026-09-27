@@ -4,6 +4,7 @@
 // ============================================================
 
 const ALLOWED_ORIGINS = [
+  'https://alexmohit825.github.io',
   'https://ehrlens.pages.dev',
   'https://ehrlens.mohalex.workers.dev',
   'https://ehrlens.app',
