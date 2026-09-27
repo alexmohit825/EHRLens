@@ -111,13 +111,17 @@
           </button>
         </div>
         <input id="file-input" type="file" accept="image/*" class="sr-only" />
+        <input id="native-camera-input" type="file" accept="image/*" capture="environment" class="sr-only" />
       </div>
     </div>
 
     <div id="camera-error" class="camera-error hidden" role="alert">
       <span class="camera-error-icon">📷</span>
-      <h3>Camera Unavailable</h3>
-      <p>Camera access was denied or your device has no camera.<br>Upload a screenshot instead.</p>
+      <h3>Camera Access Required</h3>
+      <p id="camera-error-msg">Camera permission is needed to stream the live viewfinder.</p>
+      <button id="btn-native-camera" class="btn-primary" style="max-width:280px;margin-top:10px;">📸 Take Photo with Camera</button>
+      <button id="btn-retry-camera" class="btn-ghost" style="max-width:280px;margin-top:8px;">↺ Retry Live Viewfinder</button>
+      <button id="btn-error-upload" class="btn-ghost" style="max-width:280px;margin-top:4px;">📁 Upload Screenshot</button>
     </div>
   </section>
 

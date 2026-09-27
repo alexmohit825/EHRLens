@@ -439,6 +439,12 @@ function init() {
   $('camera-upload-btn')?.addEventListener('click', () => $('file-input')?.click());
   $('file-input')?.addEventListener('change', e => handleFile(e.target.files[0]));
 
+  // Camera — native mobile camera capture fallback
+  $('native-camera-input')?.addEventListener('change', e => handleFile(e.target.files[0]));
+  $('btn-native-camera')?.addEventListener('click', () => $('native-camera-input')?.click());
+  $('btn-retry-camera')?.addEventListener('click', () => startCamera());
+  $('btn-error-upload')?.addEventListener('click', () => $('file-input')?.click());
+
   // Camera — paste zone button (PC side-by-side with Epic)
   $('paste-btn')?.addEventListener('click', triggerPasteFromButton);
 
