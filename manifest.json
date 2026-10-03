@@ -2,7 +2,8 @@
   "name": "EHRLens — AI Clinical Navigator",
   "short_name": "EHRLens",
   "description": "Point your camera at any EHR screen and ask questions. AI-powered clinical navigation for Epic, Cerner, and beyond.",
-  "start_url": "/",
+  "start_url": "https://alexmohit825.github.io/EHRLens/",
+  "scope": "https://alexmohit825.github.io/EHRLens/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0A0F1E",
@@ -21,6 +22,11 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
   "shortcuts": [
@@ -28,7 +34,7 @@
       "name": "Epic Scan",
       "short_name": "Epic",
       "description": "Open camera in Epic mode",
-      "url": "/?mode=epic"
+      "url": "https://alexmohit825.github.io/EHRLens/?mode=epic"
     }
   ]
 }
