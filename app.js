@@ -301,8 +301,6 @@ async function runQuery(question) {
   state.abortController = new AbortController();
   try {
     const data = await analyzeImage(state.capturedImage, question, state.history, state.abortController.signal);
-    state.abortController = null;
-    stopTimer();
     state.history.push({role:'user',content:question});
     state.history.push({role:'model',content:data.answer});
     if(state.history.length > 12) state.history = state.history.slice(-12);
@@ -313,13 +311,14 @@ async function runQuery(question) {
       setTimeout(() => toast(`${CONFIG.MAX_SESSION_QUERIES - state.sessionQueryCount} queries remaining this session.`), 1500);
     }
   } catch(err) {
-    state.abortController = null;
-    stopTimer();
     if (err.name === 'AbortError') {
       return;
     }
     toast(`⚠️ ${err.message || 'Query failed. Check your connection.'}`);
     showScreen('preview');
+  } finally {
+    state.abortController = null;
+    stopTimer();
   }
 }
 
