@@ -38,7 +38,7 @@ $leap2Pass = $true
 try {
   $opt = Invoke-WebRequest -Uri "https://ehrlens-api.mohalex.workers.dev/api/analyze" -Method Options -Headers @{ "Origin" = "https://ehrlens.mohalex.workers.dev" } -UseBasicParsing
   $allowOrigin = $opt.Headers["Access-Control-Allow-Origin"]
-  if ($opt.StatusCode -eq 204 -and $allowOrigin -eq "https://ehrlens.mohalex.workers.dev") {
+  if ($opt.StatusCode -eq 204 -and ($allowOrigin -eq "*" -or $allowOrigin -eq "https://ehrlens.mohalex.workers.dev")) {
     Write-Host "  [PASS] [HTTP 204] CORS Preflight OPTIONS -> Allowed Origin: $allowOrigin"
   } else {
     Write-Host "  [FAIL] [STATUS $($opt.StatusCode)] CORS Preflight unexpected response"

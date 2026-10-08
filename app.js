@@ -197,9 +197,21 @@ function stopCamera() {
 function captureFrame() {
   const v = $('video-feed');
   if (!v?.videoWidth) return null;
+  const maxDim = 1280;
+  let w = v.videoWidth;
+  let h = v.videoHeight;
+  if (w > maxDim || h > maxDim) {
+    if (w > h) {
+      h = Math.round((h * maxDim) / w);
+      w = maxDim;
+    } else {
+      w = Math.round((w * maxDim) / h);
+      h = maxDim;
+    }
+  }
   const c = document.createElement('canvas');
-  c.width = v.videoWidth; c.height = v.videoHeight;
-  c.getContext('2d').drawImage(v, 0, 0);
+  c.width = w; c.height = h;
+  c.getContext('2d').drawImage(v, 0, 0, w, h);
   return c.toDataURL('image/jpeg', CONFIG.IMAGE_QUALITY).split(',')[1];
 }
 
@@ -336,9 +348,31 @@ function renderResponse(question, answer) {
 // ── File Upload Fallback ──────────────────────────────────────
 function handleFile(file) {
   if(!file||!file.type.startsWith('image/')) { toast('Please select an image file.'); return; }
-  const r = new FileReader();
-  r.onload = e => { state.capturedImage = e.target.result.split(',')[1]; state.history=[]; showPreview(); };
-  r.readAsDataURL(file);
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 1280;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      state.capturedImage = c.toDataURL('image/jpeg', CONFIG.IMAGE_QUALITY).split(',')[1];
+      state.history = [];
+      showPreview();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 // ── Clipboard Paste (Ctrl+V / PC side-by-side with Epic) ────
